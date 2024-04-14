@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayush Lohani</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            
+            text-align: center;
+        }
+        #output {
+            white-space: pre-wrap;
+            font-size: 5px; /* Adjust font size as needed for better detail */
+        }
+        canvas {
+            display: none; /* Hide the canvas */
+        }
+    </style>
+</head>
+<body>
+    <h1>Creator:Ayush Lohani<br>ASCII Art</h1>
+    <h2><i>(Please choose any personal image for it to be converted. <br> minimize the screen to view more details.)</i></h2>
+    <input type="file" accept="image/*" id="inputImage" onchange="handleImage()">
+    <div id="output"></div>
+
+    <script>
+        function handleImage() {
+            const file = document.getElementById('inputImage').files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const aspectRatio = this.width / this.height;
+                    const maxWidth = 100; // Maximum width for the canvas
+                    const maxHeight = maxWidth / aspectRatio;
+                    canvas.width = Math.min(this.width, maxWidth);
+                    canvas.height = Math.min(this.height, maxHeight);
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(this, 0, 0, canvas.width, canvas.height);
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const ascii = convertToAscii(imageData);
+                    document.getElementById('output').innerText = ascii;
+                }
+                img.src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+
+        function convertToAscii(imageData) {
+            const { width, height, data } = imageData;
+            const asciiChars = ['@', '#', 'S', '%', '?', '*', '+', ';', ':', ',', '.', ' ']; // Adjust ASCII characters
+            let ascii = '';
+            for (let i = 0; i < height; i += 2) {
+                for (let j = 0; j < width * 4; j += 4) {
+                    const r = data[i * width * 4 + j];
+                    const g = data[i * width * 4 + j + 1];
+                    const b = data[i * width * 4 + j + 2];
+                    const gray = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+                    const asciiChar = asciiChars[Math.floor(gray / 25)]; // Divide by 25 for better granularity
+                    ascii += asciiChar;
+                }
+                ascii += '\n';
+            }
+            return ascii;
+        }
+    </script>
+</body>
+</html>
